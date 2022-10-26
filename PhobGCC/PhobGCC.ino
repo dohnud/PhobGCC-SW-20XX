@@ -12,7 +12,7 @@ float _dT;
 
 void setup() {
     serialSetup();
-	Serial.print("Software version 0.");
+	Serial.print("Software version ");
 	Serial.println(SW_VERSION);
 #ifdef BUILD_DEV
 	Serial.println("This is not a stable version");
@@ -74,7 +74,7 @@ void loop() {
 	static float measuredNotchAngles[_noOfNotches];
 
 	//read the controllers buttons
-	processButtons(_pinList, _btn, _hardware, _controls, _gains, _normGains, currentCalStep, running, tempCalPointsX, tempCalPointsY, whichStick, notchStatus, notchAngles, measuredNotchAngles, _aStickParams, _cStickParams);
+	processButtons(_pinList, _btn, _hardware, _controls, _gains, _normGains, currentCalStep, running, tempCalPointsX, tempCalPointsY, whichStick, notchStatus, notchAngles, measuredNotchAngles, _aStickParams, _cStickParams, _dT);
 
 	//check to see if we are calibrating
 	if(currentCalStep >= 0){

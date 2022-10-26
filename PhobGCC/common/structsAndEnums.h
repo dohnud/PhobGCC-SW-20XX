@@ -124,6 +124,92 @@ union Buttons{
 		uint8_t magic1 : 8;
 		uint8_t magic2 : 8;
 	};
+	struct {
+		uint16_t buttons : 16;
+		uint16_t astick : 16;
+		uint16_t cstick : 16;
+		uint8_t _La : 8;
+		uint8_t _Ra : 8;
+		uint8_t m1 : 8;
+		uint8_t m2 : 8;
+	};
+  Buttons (uint16_t btn_field=0, uint8_t LA=0, uint8_t RA=0) :
+    buttons(btn_field),
+    astick(0), cstick(0),
+    _La(LA), _Ra(RA),
+    m1(0), m2(0)
+  {}
+};
+
+#define __FRAMEDURATION 16666.667
+//               byte 1  byte 0
+#define LL_MAX 0b1111111111111111
+#define BTN_S  0b0000000000010000
+#define BTN_Y  0b0000000000001000
+#define BTN_X  0b0000000000000100
+#define BTN_B  0b0000000000000010
+#define BTN_A  0b0000000000000001
+#define BTN_Z  0b0001000000000000
+#define TRG_R  0b0010000000000000
+#define TRG_L  0b0100000000000000
+#define CRD_U  0b0000100000000000
+#define CRD_D  0b0000010000000000
+#define CRD_R  0b0000001000000000
+#define CRD_L  0b0000000100000000
+
+
+struct _EVIL {
+  const unsigned long long duration;
+  const Buttons holdmetight;
+  
+  _EVIL (long long dur=0, Buttons btns=Buttons()):
+    duration(dur),
+    holdmetight(btns)
+  {}
+};
+
+struct _REALLY_EVIL {
+  const Buttons secret_handshake;
+  const int evil_factor;
+  const _EVIL mwahahahah[16];
+};
+
+
+const _REALLY_EVIL hoho {
+	.secret_handshake = Buttons(TRG_R | BTN_B),
+	.evil_factor = 3,
+  .mwahahahah = {
+      _EVIL(2, Buttons(BTN_X | BTN_Y)),
+      _EVIL(3, Buttons()),
+      _EVIL(7+2, Buttons(BTN_B))
+    }
+};
+
+const _REALLY_EVIL wowo {
+	.secret_handshake = Buttons(TRG_R | BTN_A),
+	.evil_factor = 2,
+  .mwahahahah = {
+      _EVIL(2, Buttons(BTN_X | BTN_Y)),
+      _EVIL(40, Buttons()),
+    }
+};
+
+// FOX MULTISHINE
+const _REALLY_EVIL hehe {
+  .secret_handshake = Buttons(TRG_L | BTN_B),
+  .evil_factor = 3,
+  .mwahahahah = {
+    _EVIL(2, Buttons(BTN_Y)),
+    _EVIL(1, Buttons()),
+    _EVIL(6+2, Buttons(BTN_B)),
+  }
+};
+
+#define PANDORAS_FAVORITE_NUMBER 3
+const _REALLY_EVIL* PANDORAS_BOX[PANDORAS_FAVORITE_NUMBER] = {
+	&wowo,
+  &hoho,
+	&hehe
 };
 
 struct HardwareButtons{

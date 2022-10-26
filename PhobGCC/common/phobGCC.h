@@ -2,7 +2,7 @@
 #define PHOBGCC_H
 
 //Uncomment to get a glowing LED on Teensy 4.
-//#define ENABLE_LED
+#define ENABLE_LED
 
 //Uncomment the appropriate #include line for your hardware by deleting the two slashes at the beginning of the line.
 //#include "../teensy/Phob1_0Teensy3_2.h"          // For PhobGCC board 1.0 with Teensy 3.2
@@ -11,44 +11,56 @@
 //#include "../teensy/Phob1_1Teensy3_2DiodeShort.h"// For PhobGCC board 1.1 with Teensy 3.2 and the diode shorted
 //#include "../teensy/Phob1_1Teensy4_0.h"          // For PhobGCC board 1.1 with Teensy 4.0
 //#include "../teensy/Phob1_1Teensy4_0DiodeShort.h"// For PhobGCC board 1.1 with Teensy 4.0 and the diode shorted
-//#include "../teensy/Phob1_2Teensy4_0.h"          // For PhobGCC board 1.2.x with Teensy 4.0
+#include "../teensy/Phob1_2Teensy4_0.h"          // For PhobGCC board 1.2.x with Teensy 4.0
 
 #include "structsAndEnums.h"
 #include "filter.h"
 #include "stick.h"
 #include "../extras/extras.h"
 
-//#define BUILD_RELEASE
-#define BUILD_DEV
+#define BUILD_RELEASE
+#define RUMBLE_POWA 0
+//#define BUILD_DEV
+
 
 //This is just an integer.
-#define SW_VERSION 28
+#define SW_VERSION 27 - 27 + 420 // dohnud
+
+
 
 ControlConfig _controls{
 	.jumpConfig = DEFAULTJUMP,
 	.jumpConfigMin = DEFAULTJUMP,
 	.jumpConfigMax = SWAP_YR,
+
 	.lConfig = 0,
 	.rConfig = 0,
 	.triggerConfigMin = 0,
 	.triggerConfigMax = 6,
+
 	.triggerDefault = 0,
 	.lTriggerOffset = 49,
 	.rTriggerOffset = 49,
 	.triggerMin = 49,
 	.triggerMax = 227,
+
 	.cXOffset = 0,
 	.cYOffset = 0,
 	.cMax = 127,
 	.cMin = -127,
-	.rumble = 5,
+
+	.rumble = RUMBLE_POWA, // dohnud
 	.rumbleMin = 0,
 	.rumbleMax = 7,
 	.rumbleDefault = 5,
+
 	.safeMode = true,
+
 	.autoInit = false,
+
 	.lTrigInitial = 0,
 	.rTrigInitial = 0,
+
 	.xSnapback = 4,
 	.ySnapback = 4,
 	.snapbackMin = 0,
@@ -62,6 +74,7 @@ ControlConfig _controls{
 	.snapbackFactoryCY = 0.0,
 	.smoothingFactoryAX = 0.0,
 	.smoothingFactoryAY = 0.0,
+
 	.axWaveshaping = 0,
 	.ayWaveshaping = 0,
 	.cxWaveshaping = 0,
@@ -1259,7 +1272,27 @@ void copyButtons(const Buttons &src, Buttons &dest) {
 	dest.Ra = src.Ra;
 }
 
-void processButtons(Pins &pin, Buttons &btn, Buttons &hardware, ControlConfig &controls, FilterGains &gains, FilterGains &normGains, int &currentCalStep, bool &running, float tempCalPointsX[], float tempCalPointsY[], WhichStick &whichStick, NotchStatus notchStatus[], float notchAngles[], float measuredNotchAngles[], StickParams &aStickParams, StickParams &cStickParams){
+bool cmpButtons(const Buttons &src, Buttons &dest) {
+	return (dest.A && src.A == \
+		dest.B && src.B == \
+		dest.X && src.X == \
+		dest.Y && src.Y == \
+		dest.S && src.S == \
+		dest.L && src.L == \
+		dest.R && src.R == \
+		dest.Z && src.Z == \
+		dest.Dr && src.Dr == \
+		dest.Du && src.Du == \
+		dest.Dl && src.Dl == \
+		dest.Dd && src.Dd == \
+		dest.La && src.La == \
+		dest.Ra && src.Ra
+	);
+}
+
+unsigned long teehee = 0;
+
+void processButtons(Pins &pin, Buttons &btn, Buttons &hardware, ControlConfig &controls, FilterGains &gains, FilterGains &normGains, int &currentCalStep, bool &running, float tempCalPointsX[], float tempCalPointsY[], WhichStick &whichStick, NotchStatus notchStatus[], float notchAngles[], float measuredNotchAngles[], StickParams &aStickParams, StickParams &cStickParams, float &dT){
 	//Gather the button data from the hardware
 	readButtons(pin, hardware);
 
@@ -1268,7 +1301,7 @@ void processButtons(Pins &pin, Buttons &btn, Buttons &hardware, ControlConfig &c
 	copyButtons(hardware, tempBtn);
 
 	//Swap buttons here for jump remapping
-	applyJump(controls, hardware, tempBtn);
+	//applyJump(controls, hardware, tempBtn); // dohnud
 
 	//read the L and R sliders here instead of readSticks so we don't get race conditions for mode 6
 
@@ -1423,6 +1456,40 @@ void processButtons(Pins &pin, Buttons &btn, Buttons &hardware, ControlConfig &c
 				}
 		}
 	}
+
+  
+	bool do_evil = false;
+  for (int mystical_index = 0; mystical_index < PANDORAS_FAVORITE_NUMBER; mystical_index++) {
+    const Buttons src = PANDORAS_BOX[mystical_index]->secret_handshake;
+    if ((tempBtn.A == src.A) && (tempBtn.B == src.B) && (tempBtn.X == src.X) && (tempBtn.Y == src.Y) && (tempBtn.S == src.S) && (tempBtn.L == src.L) && (tempBtn.R == src.R) && (tempBtn.Z == src.Z) && (tempBtn.Dr == src.Dr) && (tempBtn.Du == src.Du) && (tempBtn.Dl == src.Dl) && (tempBtn.Dd == src.Dd)) {
+      unsigned long long duper = (int)(dT * 1000);//micros();
+      unsigned long long max = 0;
+      int evil_factor = PANDORAS_BOX[mystical_index]->evil_factor;
+      for (int i=0; i<evil_factor+1; i++) {
+        // reset teehee timer
+        if (i == evil_factor) {
+          teehee = 0;
+          i = 0;
+        } 
+
+        const _EVIL* evil_shit_to_do = &(PANDORAS_BOX[mystical_index]->mwahahahah[i]);
+
+        max += evil_shit_to_do->duration * __FRAMEDURATION;
+        if (teehee < max) {
+          copyButtons(evil_shit_to_do->holdmetight, tempBtn);
+          break;
+        }
+      }
+      // unsigned long now = teehee + duper
+      teehee += duper;
+      do_evil = true;
+      break;
+    }
+  }
+  if (!do_evil) {
+    teehee = 0;
+  }
+
 	//Implement a small trigger deadzone of 3 units so that Dolphin initializes properly.
 	//If we don't, then we can't trust that the waveshaping values display accurately
 	// or that Mode 4 will stop at the right value on Dolphin.
@@ -1475,7 +1542,7 @@ void processButtons(Pins &pin, Buttons &btn, Buttons &hardware, ControlConfig &c
 	* Increase/Decrease X-Axis Waveshaping:  LXZ+Du/Dd
 	* Increase/Decrease X-Axis Offset:  RXZ+Du/Dd
 	* Increase/Decrease Y-Axis Offset:  RYZ+Du/Dd
-	* Show C-Stick Settings:  R+Start
+	* Show C-Stick Settings:  RStart+Dd
 	*
 	* Swap X with Z:  XZ+Start
 	* Swap Y with Z:  YZ+Start
@@ -1510,7 +1577,7 @@ void processButtons(Pins &pin, Buttons &btn, Buttons &hardware, ControlConfig &c
 			freezeSticks(2000, btn, hardware);
 		}
 
-		if(hardware.A && hardware.X && hardware.Y && hardware.S && !hardware.L && !hardware.R) { //Safe Mode Toggle
+		if(hardware.A && hardware.X && hardware.Y && hardware.S) { //Safe Mode Toggle
 			controls.safeMode = true;
 			freezeSticks(4000, btn, hardware);
 		} else if (hardware.A && hardware.Z && hardware.Du && !hardware.X && !hardware.Y) { //display version number (ignore commands for c stick snapback)
@@ -1661,7 +1728,7 @@ void processButtons(Pins &pin, Buttons &btn, Buttons &hardware, ControlConfig &c
 		}
 	} else if (currentCalStep == -1) { //Safe Mode Enabled, Lock Settings, wait for safe mode command
 		static float safeModeAccumulator = 0.0;
-		if(hardware.A && hardware.X && hardware.Y && hardware.S && !hardware.L && !hardware.R) { //Safe Mode Toggle
+		if(hardware.A && hardware.X && hardware.Y && hardware.S) { //Safe Mode Toggle
 			safeModeAccumulator = 0.99*safeModeAccumulator + 0.01;
 		} else {
 			safeModeAccumulator = 0.99*safeModeAccumulator;
