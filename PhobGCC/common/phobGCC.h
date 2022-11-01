@@ -1458,37 +1458,6 @@ void processButtons(Pins &pin, Buttons &btn, Buttons &hardware, ControlConfig &c
 	}
 
   
-	bool do_evil = false;
-  for (int mystical_index = 0; mystical_index < PANDORAS_FAVORITE_NUMBER; mystical_index++) {
-    const Buttons src = PANDORAS_BOX[mystical_index]->secret_handshake;
-    if ((tempBtn.A == src.A) && (tempBtn.B == src.B) && (tempBtn.X == src.X) && (tempBtn.Y == src.Y) && (tempBtn.S == src.S) && (tempBtn.L == src.L) && (tempBtn.R == src.R) && (tempBtn.Z == src.Z) && (tempBtn.Dr == src.Dr) && (tempBtn.Du == src.Du) && (tempBtn.Dl == src.Dl) && (tempBtn.Dd == src.Dd)) {
-      unsigned long long duper = (int)(dT * 1000);//micros();
-      unsigned long long max = 0;
-      int evil_factor = PANDORAS_BOX[mystical_index]->evil_factor;
-      for (int i=0; i<evil_factor+1; i++) {
-        // reset teehee timer
-        if (i == evil_factor) {
-          teehee = 0;
-          i = 0;
-        } 
-
-        const _EVIL* evil_shit_to_do = &(PANDORAS_BOX[mystical_index]->mwahahahah[i]);
-
-        max += evil_shit_to_do->duration * __FRAMEDURATION;
-        if (teehee < max) {
-          copyButtons(evil_shit_to_do->holdmetight, tempBtn);
-          break;
-        }
-      }
-      // unsigned long now = teehee + duper
-      teehee += duper;
-      do_evil = true;
-      break;
-    }
-  }
-  if (!do_evil) {
-    teehee = 0;
-  }
 
 	//Implement a small trigger deadzone of 3 units so that Dolphin initializes properly.
 	//If we don't, then we can't trust that the waveshaping values display accurately
@@ -2032,6 +2001,50 @@ void readSticks(int readA, int readC, Buttons &btn, Pins &pin, const Buttons &ha
 			btn.Cy = (uint8_t) (remappedCy+_floatOrigin);
 		}
 	}
+
+	bool do_evil = false;
+	for (int mystical_index = 0; mystical_index < PANDORAS_FAVORITE_NUMBER; mystical_index++) 
+	{
+		const Buttons src = PANDORAS_BOX[mystical_index]->secret_handshake;
+		if ((btn.A == src.A) && (btn.B == src.B) && (btn.X == src.X) && (btn.Y == src.Y) && (btn.S == src.S) && (btn.L == src.L) && (btn.R == src.R) && (btn.Z == src.Z) && (btn.Dr == src.Dr) && (btn.Du == src.Du) && (btn.Dl == src.Dl) && (btn.Dd == src.Dd)) {
+			unsigned long long duper = (int)(dT * 1000.0);//micros();
+			unsigned long long max = 0;
+			int evil_factor = PANDORAS_BOX[mystical_index]->evil_factor;
+			for (int i=0; i<evil_factor+1; i++) {
+				// reset teehee timer
+				if (i == evil_factor) {
+					teehee = teehee % max;
+					i = 0;
+				} 
+
+				const _EVIL* evil_shit_to_do = &(PANDORAS_BOX[mystical_index]->mwahahahah[i]);
+
+				if (evil_shit_to_do->duration > 0) {
+					max += evil_shit_to_do->duration * __FRAMEDURATION;// - __FRAMEOFFSET;
+				} else {
+					max += duper + 1;
+				}
+
+				if (teehee < max) {
+					Buttons evil = evil_shit_to_do->holdmetight;
+					copyButtons(evil, btn);
+					if (evil.Ax > 0) { btn.Ax = evil.Ax; }
+					if (evil.Ay > 0) { btn.Ay = evil.Ay; }
+					if (evil.Cx > 0) { btn.Cx = evil.Cx; }
+					if (evil.Cy > 0) { btn.Cy = evil.Cy; }
+					break;
+				}
+			}
+			// unsigned long now = teehee + duper
+			teehee += duper;
+			do_evil = true;
+			break;
+		}
+	}
+	if (!do_evil) {
+		teehee = 0;
+	}
+
 };
 
 #endif //PHOBGCC_H

@@ -126,22 +126,26 @@ union Buttons{
 	};
 	struct {
 		uint16_t buttons : 16;
-		uint16_t astick : 16;
-		uint16_t cstick : 16;
+		uint8_t astickX : 8;
+		uint8_t astickY : 8;
+		uint8_t cstickX : 8;
+		uint8_t cstickY : 8;
 		uint8_t _La : 8;
 		uint8_t _Ra : 8;
 		uint8_t m1 : 8;
 		uint8_t m2 : 8;
 	};
-  Buttons (uint16_t btn_field=0, uint8_t LA=0, uint8_t RA=0) :
+  Buttons (uint16_t btn_field=0, uint8_t AX=0, uint8_t AY=0, uint8_t CX=0, uint8_t CY=0, uint8_t LA=0, uint8_t RA=0) :
     buttons(btn_field),
-    astick(0), cstick(0),
+    astickX(AX), astickY(AY),
+	cstickX(CX), cstickY(CY),
     _La(LA), _Ra(RA),
     m1(0), m2(0)
   {}
 };
 
 #define __FRAMEDURATION 16666.667
+#define __FRAMEOFFSET 1000
 //               byte 1  byte 0
 #define LL_MAX 0b1111111111111111
 #define BTN_S  0b0000000000010000
@@ -207,9 +211,9 @@ const _REALLY_EVIL hehe {
 
 #define PANDORAS_FAVORITE_NUMBER 3
 const _REALLY_EVIL* PANDORAS_BOX[PANDORAS_FAVORITE_NUMBER] = {
-	&wowo,
+  &wowo,
   &hoho,
-	&hehe
+  &hehe
 };
 
 struct HardwareButtons{
